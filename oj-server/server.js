@@ -11,6 +11,12 @@ app.use(express.static(path.join(__dirname, "../public"))); // 从public里找�
 app.use('/', indexRouter); // 但凡要求根目录的请求都交由indexRouter处理
 app.use('/api/v1', restRouter); // 但凡以/api/v1开头的请求都交由restRouter处理
 
+app.use(function (req, res) {
+    // send index.html to start client side
+    res.sendFile("index.html", {root: path.join(__dirname, '../public')});
+});
+
+
 var server = app.listen(3000, function () {
     var host = server.address().address;
     var port = server.address().port;
