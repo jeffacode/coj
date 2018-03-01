@@ -1,6 +1,7 @@
 import { Routes, RouterModule} from "@angular/router";
 import { ProblemListComponent } from './components/problem-list/problem-list.component';
 import { ProblemDetailComponent } from './components/problem-detail/problem-detail.component';
+import {ProfileComponent} from "./components/profile/profile.component";
 
 const routes: Routes = [
   {
@@ -15,6 +16,10 @@ const routes: Routes = [
   {
     path: "problems/:id", // 有指定id，localhost:4200/problems/123
     component: ProblemDetailComponent // 使用ProblemDetailComponent组件
+  },
+  {
+    path: "profile", // localhost:4200/profile
+    component: ProfileComponent // 使用ProfileComponent组件
   },
   {
     path: "**", // 其他地址，localhost:4200/42133

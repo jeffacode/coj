@@ -2,20 +2,25 @@ import {Injectable} from '@angular/core';
 import {Router} from '@angular/router';
 import 'rxjs/add/operator/filter';
 import * as auth0 from 'auth0-js';
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 
 @Injectable()
 export class AuthService {
 
+  clientID = 'wkKQE0SO-9mDmdKQjg_ZavyCnHjbnfrr';
+  domain =  'jeffacode.auth0.com';
+
   auth0 = new auth0.WebAuth({
-    clientID: 'wkKQE0SO-9mDmdKQjg_ZavyCnHjbnfrr',
-    domain: 'jeffacode.auth0.com',
+    clientID: this.clientID,
+    domain: this.domain,
     responseType: 'token id_token',
-    audience: 'https://jeffacode.auth0.com/userinfo',
-    redirectUri: 'http://localhost:3000/callback',
-    scope: 'openid'
+    audience: `https://${this.domain}/userinfo`,
+    redirectUri: 'http://localhost:3000',
+    scope: 'openid profile' // to retrieve user information
   });
 
-  constructor(public router: Router) {
+
+  constructor(public router: Router, public http: HttpClient) {
   }
 
   public login(): void {
@@ -66,5 +71,53 @@ export class AuthService {
     const expiresAt = JSON.parse(localStorage.getItem('expires_at'));
     return new Date().getTime() < expiresAt;
   }
+
+  // make a call for the user's information
+  userProfile: any;
+
+  public getProfile(cb): void {
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      throw new Error('Access Token must exist to fetch profile');
+    }
+
+    const self = this;
+    this.auth0.client.userInfo(accessToken, (err, profile) => {
+      if (profile) {
+        self.userProfile = profile;
+      }
+      cb(err, profile);
+    });
+  }
+
+  // reset password
+  profile: any;
+
+  resetPassword(): void {
+    this.getProfile((err, profile) => this.profile = profile);
+    let url:string = `https://${this.domain}/dbconnections/change_password`;
+    let body = {
+      client_id: this.clientID,
+      email: this.profile.name,
+      connection: 'Username-Password-Authentication'
+    };
+
+    let headers = new HttpHeaders().set('Content-Type', 'application/json');
+
+    this.http.post(url, body, {headers})
+      .toPromise()
+      .then((res: any) => {
+        console.log(res);
+      })
+      .catch(this.handleError);
+
+  }
+
+  // error handler
+  private handleError(error: any): Promise<any> {
+    console.error('An error occurred', error); // for demo purpises only
+    return Promise.reject(error.body || error);
+  }
+
 
 }

@@ -14,6 +14,7 @@ app.use('/api/v1', restRouter); // 但凡以/api/v1开头的请求都交由restR
 app.use(function (req, res) {
     // send index.html to start client side
     res.sendFile("index.html", {root: path.join(__dirname, '../public')});
+
 });
 
 

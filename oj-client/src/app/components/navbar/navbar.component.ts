@@ -7,14 +7,24 @@ import { Component, OnInit, Inject } from '@angular/core';
 })
 export class NavbarComponent implements OnInit {
 
-  title = "COJ";
-  username = "";
+  title = "Collaborative Online Judge";
+  profile: any;
 
   constructor(@Inject('auth') private auth) {
-    auth.handleAuthentication(); //  The method processes the authentication hash while your app loads.
   }
 
   ngOnInit() {
+    if (this.auth.userProfile) {
+      this.profile = this.auth.userProfile;
+    } else {
+      this.auth.getProfile((err, profile) => {
+        this.profile = profile;
+      });
+    }
+  }
+
+  login() {
+    this.auth.login();
   }
 
 }

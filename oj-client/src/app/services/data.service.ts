@@ -1,16 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Problem } from "../models/problem.model";
-// import { PROBLEMS } from "../mock-problems"
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { BehaviorSubject } from "rxjs/BehaviorSubject";
 import { Observable } from "rxjs/Observable";
 import 'rxjs/add/operator/toPromise';
-
-const httpOptions = {
-  headers: new HttpHeaders({
-    'Content-Type':  'application/json'
-  })
-};
+// import { PROBLEMS } from "../mock-problems"
 
 // @Injectable()
 // export class DataService {
@@ -66,7 +60,9 @@ export class DataService {
   }
 
   addProblem(problem: Problem): Promise<Problem> {
-    return this.http.post("api/v1/problems", problem, httpOptions)
+    let headers = new HttpHeaders().set('Content-Type', 'application/json');
+
+    return this.http.post("api/v1/problems", problem, {headers})
       .toPromise()
       .then((res: Problem) => {
         this.getProblems(); // 当添加完后如果不调用它，那么页面上还是只有那几道题
