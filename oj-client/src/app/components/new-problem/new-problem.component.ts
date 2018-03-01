@@ -43,7 +43,7 @@ export class NewProblemComponent implements OnInit {
 
   newProblem: Problem = DEFAULT_PROBLEM; // 初始赋一个默认问题
 
-  constructor(@Inject('data') private data) { }
+  constructor(@Inject('data') private data, @Inject('authGuard') public authGuard) { }
 
   ngOnInit() {
   }

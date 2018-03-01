@@ -7,16 +7,12 @@ import { Component, OnInit, Inject } from '@angular/core';
 })
 export class ProfileComponent implements OnInit {
 
-  email: string;
-  username: string;
+  profile: any;
 
   constructor(@Inject('auth') private auth) { }
 
   ngOnInit() {
-    this.auth.getProfile((err, profile) => {
-        this.email = profile.name;
-        this.username = profile.nickname;
-    });
+    this.auth.getProfile(profile => this.profile = profile);
   }
 
   resetPassword() {

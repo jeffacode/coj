@@ -14,12 +14,8 @@ export class NavbarComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.auth.userProfile) {
-      this.profile = this.auth.userProfile;
-    } else {
-      this.auth.getProfile((err, profile) => {
-        this.profile = profile;
-      });
+    if (this.auth.isAuthenticated()) {
+      this.auth.getProfile(profile => this.profile = profile);
     }
   }
 
@@ -27,4 +23,7 @@ export class NavbarComponent implements OnInit {
     this.auth.login();
   }
 
+  logout() {
+    this.auth.logout();
+  }
 }

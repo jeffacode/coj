@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Router} from '@angular/router';
-import 'rxjs/add/operator/filter';
 import * as auth0 from 'auth0-js';
+import 'rxjs/add/operator/toPromise';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 
 @Injectable()
@@ -18,7 +18,6 @@ export class AuthService {
     redirectUri: 'http://localhost:3000',
     scope: 'openid profile' // to retrieve user information
   });
-
 
   constructor(public router: Router, public http: HttpClient) {
   }
@@ -47,24 +46,35 @@ export class AuthService {
   private setSession(authResult): void {
     // Set the time that the Access Token will expire at
     const expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime());
-    localStorage.setItem('access_token', authResult.accessToken);
-    localStorage.setItem('id_token', authResult.idToken);
+    const accessToken = authResult.accessToken;
+    const idToken = authResult.idToken;
+
     localStorage.setItem('expires_at', expiresAt);
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('id_token', idToken);
+    //
+    // this.auth0.client.userInfo(accessToken, (err, profile) => {
+    //   if (profile) {
+    //     localStorage.setItem('profile', profile);
+    //   } else if (err) {
+    //     console.log(err);
+    //   }
+    // });
   }
 
-  // removes the user's tokens and
-  // expiry time from browser storage.
+
   public logout(): void {
-    // Remove tokens and expiry time from localStorage
+    // Remove tokens, expiry time and profile from localStorage
+    localStorage.removeItem('expires_at');
     localStorage.removeItem('access_token');
     localStorage.removeItem('id_token');
-    localStorage.removeItem('expires_at');
+    // localStorage.removeItem('profile');
+
     // Go back to the home route
     this.router.navigate(['/']);
   }
 
-  // checks whether the expiry time for
-  // the user's Access Token has passed.
+
   public isAuthenticated(): boolean {
     // Check whether the current time is past the
     // Access Token's expiry time
@@ -73,35 +83,27 @@ export class AuthService {
   }
 
   // make a call for the user's information
-  userProfile: any;
-
   public getProfile(cb): void {
     const accessToken = localStorage.getItem('access_token');
-    if (!accessToken) {
-      throw new Error('Access Token must exist to fetch profile');
-    }
-
-    const self = this;
     this.auth0.client.userInfo(accessToken, (err, profile) => {
       if (profile) {
-        self.userProfile = profile;
+        cb(profile);
+      } else if (err) {
+        console.log(err);
       }
-      cb(err, profile);
     });
   }
 
-  // reset password
-  profile: any;
 
-  resetPassword(): void {
-    this.getProfile((err, profile) => this.profile = profile);
+  public resetPassword(): void {
+    let name;
+    this.getProfile(profile => name = profile.name);
     let url:string = `https://${this.domain}/dbconnections/change_password`;
     let body = {
       client_id: this.clientID,
-      email: this.profile.name,
+      email: name,
       connection: 'Username-Password-Authentication'
     };
-
     let headers = new HttpHeaders().set('Content-Type', 'application/json');
 
     this.http.post(url, body, {headers})

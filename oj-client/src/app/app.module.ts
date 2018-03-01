@@ -14,6 +14,7 @@ import { routing } from "./app.routes";
 
 import { DataService } from "./services/data.service";
 import { AuthService } from "./services/auth.service";
+import { AuthGuardService } from "./services/auth-guard.service";
 
 
 @NgModule({
@@ -31,13 +32,12 @@ import { AuthService } from "./services/auth.service";
     HttpClientModule,
     routing
   ],
-  providers: [{
-    provide: 'data',
-    useClass: DataService
-  }, {
-    provide: 'auth',
-    useClass: AuthService
-  }],
+  providers: [
+    {provide: 'data', useClass: DataService},
+    {provide: 'auth', useClass: AuthService},
+    {provide: 'authGuard', useClass: AuthGuardService},
+    AuthGuardService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

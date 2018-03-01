@@ -16,7 +16,7 @@
           <form class="form-inline my-2 my-lg-0">
             <button type="button" class="btn btn-primary"
                     *ngIf="!auth.isAuthenticated()"
-                    (click)="auth.login()">
+                    (click)="login()">
               Log In
             </button>
           </form>
@@ -31,7 +31,7 @@
             <a class="dropdown-item" href="#">My Favorites</a>
             <a class="dropdown-item" href="#">My Favorites</a>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="#" (click)="auth.logout()">
+            <a class="dropdown-item" href="#" (click)="logout()">
               Log out
             </a>
           </div>
