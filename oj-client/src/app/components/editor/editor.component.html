@@ -1,0 +1,49 @@
+<section>
+  <header class="editor-header">
+    <div class="container">
+      <div class="row">
+        <!-- language options -->
+        <select class="form-control pull-left lang-select col-3" name="language" [(ngModel)]="language" (change)="setLanguage(language)">
+          <option *ngFor="let language of languages" [value]="language">
+            {{language}}
+          </option>
+        </select>
+
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-default col-1" data-toggle="modal" data-target="#exampleModal">
+          <i class="fa fa-refresh" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Reset</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            You will lose current code in the window, are you sure?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-dismiss="modal" (click)="resetEditor()">Close</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- editor -->
+  <div id="editor"></div>
+
+  <!-- submit button -->
+  <footer class="editor-footer">
+    <button type="button" class="btn btn-success pull-right" (click)="submit()">Submit Solution</button>
+  </footer>
+</section>
+

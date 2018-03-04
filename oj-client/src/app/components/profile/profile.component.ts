@@ -9,10 +9,10 @@ export class ProfileComponent implements OnInit {
 
   profile: any;
 
-  constructor(@Inject('auth') private auth) { }
+  constructor(@Inject('auth') public auth) { }
 
   ngOnInit() {
-    this.auth.getProfile(profile => this.profile = profile);
+    this.profile = JSON.parse(localStorage.getItem('profile'));
   }
 
   resetPassword() {

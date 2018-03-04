@@ -1,10 +1,8 @@
-import { Injectable, Inject } from '@angular/core';
+import {Injectable, Inject} from '@angular/core';
 import { Router, CanActivate } from '@angular/router';
 
 @Injectable()
 export class  AuthGuardService implements CanActivate {
-
-  profile:any;
 
   constructor(@Inject('auth') private auth, private router: Router) {
   }
@@ -20,12 +18,11 @@ export class  AuthGuardService implements CanActivate {
   }
 
   isAdmin(): boolean {
-    this.auth.getProfile(profile => this.profile = profile);
-    if (this.auth.isAuthenticated() && this.profile.name == "1904219831@qq.com") {
+    let profile = JSON.parse(localStorage.getItem('profile'));
+    if (this.auth.isAuthenticated() && profile.name == "1904219831@qq.com") {
       return true;
     } else {
       return false;
     }
   }
-
 }

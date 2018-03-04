@@ -7,15 +7,12 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 @Injectable()
 export class AuthService {
 
-  clientID = 'wkKQE0SO-9mDmdKQjg_ZavyCnHjbnfrr';
-  domain =  'jeffacode.auth0.com';
-
   auth0 = new auth0.WebAuth({
-    clientID: this.clientID,
-    domain: this.domain,
+    clientID: 'wkKQE0SO-9mDmdKQjg_ZavyCnHjbnfrr',
+    domain: 'jeffacode.auth0.com',
     responseType: 'token id_token',
-    audience: `https://${this.domain}/userinfo`,
-    redirectUri: 'http://localhost:3000',
+    audience: 'https://jeffacode.auth0.com/userinfo',
+    redirectUri: 'http://localhost:3000/callback',
     scope: 'openid profile' // to retrieve user information
   });
 
@@ -43,33 +40,25 @@ export class AuthService {
 
   // stores the user's Access Token, ID Token, and
   // the Access Token's expiry time in browser storage.
+  userProfile: any;
   private setSession(authResult): void {
     // Set the time that the Access Token will expire at
     const expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime());
-    const accessToken = authResult.accessToken;
-    const idToken = authResult.idToken;
-
+    localStorage.setItem('access_token', authResult.accessToken);
+    localStorage.setItem('id_token', authResult.idToken);
     localStorage.setItem('expires_at', expiresAt);
-    localStorage.setItem('access_token', accessToken);
-    localStorage.setItem('id_token', idToken);
-    //
-    // this.auth0.client.userInfo(accessToken, (err, profile) => {
-    //   if (profile) {
-    //     localStorage.setItem('profile', profile);
-    //   } else if (err) {
-    //     console.log(err);
-    //   }
-    // });
+    this.getProfile((err, profile) => {
+      localStorage.setItem('profile', JSON.stringify(profile));
+    });
   }
 
 
   public logout(): void {
-    // Remove tokens, expiry time and profile from localStorage
-    localStorage.removeItem('expires_at');
+    // Remove tokens and expiry time from localStorage
     localStorage.removeItem('access_token');
     localStorage.removeItem('id_token');
-    // localStorage.removeItem('profile');
-
+    localStorage.removeItem('expires_at');
+    localStorage.removeItem('profile');
     // Go back to the home route
     this.router.navigate(['/']);
   }
@@ -83,36 +72,34 @@ export class AuthService {
   }
 
   // make a call for the user's information
+
   public getProfile(cb): void {
     const accessToken = localStorage.getItem('access_token');
-    this.auth0.client.userInfo(accessToken, (err, profile) => {
-      if (profile) {
-        cb(profile);
-      } else if (err) {
-        console.log(err);
-      }
+    if (!accessToken) {
+      throw new Error('Access Token must exist to fetch profile');
+    }
+    this.auth0.client.userInfo(accessToken, (err, profile) => { // userInfo是异步的
+      cb(err, profile);
     });
   }
 
-
   public resetPassword(): void {
-    let name;
-    this.getProfile(profile => name = profile.name);
-    let url:string = `https://${this.domain}/dbconnections/change_password`;
-    let body = {
-      client_id: this.clientID,
-      email: name,
-      connection: 'Username-Password-Authentication'
-    };
-    let headers = new HttpHeaders().set('Content-Type', 'application/json');
+    this.getProfile((err, profile) => {
+      let url:string = `https://jeffacode.auth0.com/dbconnections/change_password`;
+      let body = {
+        client_id: 'wkKQE0SO-9mDmdKQjg_ZavyCnHjbnfrr',
+        email: profile.name,
+        connection: 'Username-Password-Authentication'
+      };
+      let headers = new HttpHeaders().set('Content-Type', 'application/json');
 
-    this.http.post(url, body, {headers})
-      .toPromise()
-      .then((res: any) => {
-        console.log(res);
-      })
-      .catch(this.handleError);
-
+      this.http.post(url, body, {headers})
+        .toPromise()
+        .then((res: any) => {
+          console.log(res);
+        })
+        .catch(this.handleError);
+    });
   }
 
   // error handler
