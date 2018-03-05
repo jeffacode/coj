@@ -2,6 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule }   from '@angular/forms';
 import {HttpClientModule} from '@angular/common/http';
+import { ReactiveFormsModule } from "@angular/forms";
 
 import { AppComponent } from './app.component';
 import { ProblemListComponent } from './components/problem-list/problem-list.component';
@@ -13,11 +14,13 @@ import { EditorComponent } from './components/editor/editor.component';
 
 import { routing } from "./app.routes";
 
+import { SearchPipe } from './pipes/search.pipe';
+
 import { DataService } from "./services/data.service";
 import { AuthService } from "./services/auth.service";
 import { AuthGuardService } from "./services/auth-guard.service";
 import { CollaborationService } from "./services/collaboration.service";
-
+import { InputService } from "./services/input.service";
 
 @NgModule({
   declarations: [
@@ -27,20 +30,22 @@ import { CollaborationService } from "./services/collaboration.service";
     NewProblemComponent,
     NavbarComponent,
     ProfileComponent,
-    EditorComponent
+    EditorComponent,
+    SearchPipe
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpClientModule,
-    routing
+    routing,
+    ReactiveFormsModule
   ],
   providers: [
     {provide: 'data', useClass: DataService},
     {provide: 'auth', useClass: AuthService},
     {provide: 'authGuard', useClass: AuthGuardService},
     {provide: 'collaboration', useClass: CollaborationService},
-    AuthGuardService
+    {provide: 'input', useClass: InputService}
   ],
   bootstrap: [AppComponent]
 })

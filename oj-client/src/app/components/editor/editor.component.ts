@@ -20,28 +20,31 @@ export class EditorComponent implements OnInit {
     'C++': 'c_cpp',
     'Python': 'python'
   };
-  language: string;
+  language = 'Java';
   sessionId: string;
+  output: string; // 接收代码执行结果
 
   defaultContent = {
     'Java': `public class Example {
-      public static void main(String[] args) {
-        // Type your Java code here
-      }
-    }`,
+  public static void main(String[] args) {
+    // Type your Java code here
+  }
+}`,
     'C++': `#include <iostream>
-    using namespace std;
+using namespace std;
 
-    int main() {
-        // Type your C++ code here
-        return 0;
-    }`,
+int main() {
+    // Type your C++ code here
+    return 0;
+}`,
     'Python': `class Solution: 
-    def example():
-      # write your Python code here`
+  def example():
+    # write your Python code here`
   };
 
-  constructor(@Inject('collaboration') private collaboration, private route: ActivatedRoute) {
+  constructor(@Inject('collaboration') private collaboration,
+              @Inject('data') private data,
+              private route: ActivatedRoute) {
   }
 
   ngOnInit() {
@@ -69,14 +72,22 @@ export class EditorComponent implements OnInit {
     // 调用init方法开启websocket通信
     this.collaboration.init(this.editor, this.sessionId);
 
-    // lastAppliedChange记录上一次的变化点
-    this.editor.lastAppliedChange = null;
-    // 给editor绑定change事件，当在本地编辑时就会触发这个事件
+    // 给editor绑定change事件，监视本地是否产生编辑操作
+    this.editor.lastAppliedChange = null; // lastAppliedChange记录上一次的变化点
     this.editor.on('change', (e) => {
       if (this.editor.lastAppliedChange != e) {
-        this.collaboration.sendLocalChange(JSON.stringify(e)); // 调用collaboration服务的sendLocalChange方法向server发送当前的变化点
+        this.collaboration.sendMyChange(JSON.stringify(e)); // 调用collaboration服务的sendMyChange方法向server发送本用户的变化点
       }
-    })
+    });
+
+    // 给editor绑定changeCursor事件，监视本地是否发送光标移动
+    this.editor.getSession().getSelection().on("changeCursor", () => {
+      let cursor = this.editor.getSession().getSelection().getCursor(); // 获得当前的光标对象
+      this.collaboration.sendMyCursor(JSON.stringify(cursor)); // 调用collaboration服务的sendMyCursor方法向server发送本用户的光标
+    });
+
+    // 在编辑器初始化时首先要从server端恢复相同sessionId的数据
+    this.collaboration.restoreBuffer();
   }
 
   setLanguage(language: string): void {
@@ -87,11 +98,18 @@ export class EditorComponent implements OnInit {
   resetEditor(): void {
     this.editor.getSession().setMode('ace/mode/' + this.languageToMode[this.language]);
     this.editor.setValue(this.defaultContent[this.language]);
+    this.output = ''; // 同时清空代码执行结果
   }
 
   submit(): void {
     let userCode = this.editor.getValue();
-    this.editor.log(userCode);
+    let data = {
+      user_code: userCode,
+      lang: this.language
+    };
+    // 将代码发出后返回Promise
+    this.data.buildAndRun(data)
+      .then(result => this.output = result.text);
   }
 
 }

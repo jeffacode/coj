@@ -4,10 +4,13 @@ var problemService = require("../services/problemService");
 var bodyParser = require("body-parser");
 var jsonParser = bodyParser.json(); // 只需要json解析器
 
-// 在/api/v1开头的情况下如果再跟/problems，
-// 调用problemService服务的getProblems方法，
-// 它会返回一个Promise对象，当这个对象resolve的时候，
-// 会发回一个problems，res用json方式将它返回给请求者
+var node_rest_client = require('node-rest-client').Client;
+var rest_client = new node_rest_client();
+
+EXECUTOR_SERVER_URL = 'http://localhost:5000/build_and_run';
+rest_client.registerMethod('build_and_run', EXECUTOR_SERVER_URL, 'POST');
+
+// GET /api/v1/problems
 router.get("/problems", function (req, res) {
     problemService.getProblems()
         .then(function(problems) {
@@ -15,21 +18,39 @@ router.get("/problems", function (req, res) {
         });
 });
 
-// 处理client只要传回一个problem的请求
+// GET /api/v1/problems/:id
 router.get("/problems/:id", function (req, res) {
     var id = req.params.id;
     problemService.getProblem(+id)
         .then(problem => res.json(problem)); // +id是将字符串转成整型
 });
 
-// 处理client添加一个problem的请求
-// 用jsonParser将请求解析为一个JSON对象，
-// 此时req.body就是新问题的JSON对象
-// 但它只有name, desc和difficulty，需要服务器自行添加id
+// POST /api/v1/problems
 router.post("/problems", jsonParser, function (req, res) {
     problemService.addProblem(req.body)
         .then(problem => res.json(problem))
-        .catch(error =>res.status(400).send("Problem name already exists!"))
+        .catch(error => res.status(400).send("Problem name already exists!"))
+});
+
+// POST /api/v1/build_and_run
+router.post("/build_and_run", jsonParser, function (req, res) {
+    const userCode = req.body.user_code;
+    const lang = req.body.lang;
+    console.log(lang + ': ' + userCode);
+
+    // 收到client的代码后转发给executor server处理
+    rest_client.methods.build_and_run(
+        {
+            data: { code: userCode, lang: lang },
+            headers: { "Content-Type": "application/json" }
+        }, (data, response) => {
+            console.log("Received response from execution server: " + response);
+            const text = `Build output: ${data['build']}
+Execute output: ${data['run']}`;
+            data['text'] = text;
+            res.json(data); // 向client返回data
+        }
+    );
 });
 
 module.exports = router; // 将这个router export出去就能供server来用了

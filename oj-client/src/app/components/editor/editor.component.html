@@ -30,7 +30,7 @@
             You will lose current code in the window, are you sure?
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-success" data-dismiss="modal" (click)="resetEditor()">Close</button>
+            <button type="button" class="btn btn-success" data-dismiss="modal" (click)="resetEditor()">Reset</button>
             <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
           </div>
         </div>
@@ -40,6 +40,9 @@
 
   <!-- editor -->
   <div id="editor"></div>
+
+  <!-- Output -->
+  <div>{{output}}</div>
 
   <!-- submit button -->
   <footer class="editor-footer">

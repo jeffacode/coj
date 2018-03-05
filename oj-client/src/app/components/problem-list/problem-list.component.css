@@ -3,10 +3,16 @@
   margin-right: 10px;
 }
 
-.label difficulty {
-  padding-top: 0.6em;
+.label.difficulty {
+  display:block;
+  float:left;
+  width:20px;
+  margin-top: 3px;
+  padding: 3px;
+  border-radius: 2px;
   color: #fbfdfa;
   font-size: 12px;
+  text-align: center;
 }
 
 .title {
